@@ -26,6 +26,10 @@ make open-and-telnet-${plat} cmd="/mount-and-docmd.sh ${myip} ${PWD} $1"
 endef
 endif
 
+define linkit
+	${CC} -o $$@ $$< ${LDFLAGS}
+endef
+
 define single-target
 $1: $1.o
 	${CC} -o $$@ $$< ${LDFLAGS}

@@ -11,6 +11,7 @@ sed -i '$amount ' etc/init.d/rcS
 chmod 777 root
 mkdir etc/profile.d
 echo 'echo *** WELCOME ! YOU HACKIT INTO IT ! ***' > etc/profile.d/a.sh
+cp ../profile.sh etc/profile.d/b.sh
 rm etc/securetty
 cp ../inittab-3530 etc/inittab
 cp ../dvsdk-3530/gstreamer-ti_svnr884/src/.libs/libgstticodecplugin.so usr/lib/gstreamer-0.10
