@@ -1,10 +1,13 @@
 #!/bin/bash
 
 # Change to your dvsdk path
-tisdk=$parentsdir/ti-dvsdk_omap3530-evm_4_01_00_09
+sdkdir=$parentsdir/dvsdk-3530
+cd $sdkdir
 
-cd $tisdkdir
+sed "/^clean:/{s, demos_clean, ,;s,linux_clean,,}" -i Makefile
+
 sed "/^CSTOOL_DIR/s,=.*,=$toolchaindir," -i Rules.make
+sed "/^DVSDK_INSTALL_DIR/s,=.*,=$sdkdir," -i Rules.make
 sed "
 /^export TOOLCHAIN_PATH/s,=.*,=$toolchaindir,
 /^export SDK_PATH/s,=.*,=$sysrootdir,
@@ -40,6 +43,14 @@ sed "
 sed "
 /^libgstticodecplugin_la_LIBADD/s,=.*,=,
 " -i gstreamer-ti_svnr884/src/Makefile.am
+
+make linux && \
+make cmem && \
+make dsplink && \
+make c6accel && \
+make codecs && \
+make dmai && \
+make gstreamer_ti
 
 make linux && \
 make cmem && \

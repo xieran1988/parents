@@ -54,12 +54,7 @@ if ($fs ne 'mmc' && $fs ne 'none') {
 	$fspath = `realpath $fs` if $fs;
 	chomp $fspath if $fspath;
 	die "fspath $fspath should not be empty !!" if !$fspath;
-	if (not `awk '{print \$1}' /etc/exports | grep $fspath`) {
-		print "\n**********\n";
-		print "$fspath not in /etc/exports!!\n";
-		`sudo sed -i '\$a$fspath *(rw,nohide,insecure,no_subtree_check,async,no_root_squash)' /etc/exports`;
-		`sudo /etc/init.d/nfs-kernel-server restart`;
-	}
+	`$parentsdir/add-exportfs.sh $fspath`;
 }
 
 my $myip = $ENV{'myip'};
