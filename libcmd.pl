@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 
 my $sysrootdir = shift @ARGV;
 sub findlib {

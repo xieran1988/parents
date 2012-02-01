@@ -13,7 +13,8 @@ CC := ${crossprefix}gcc
 OBJDUMP := ${crossprefix}objdump
 CFLAGS += $(shell ${pkgvars} pkg-config ${libs} --cflags 2> /dev/null)
 CFLAGS += -I${sysrootdir}/usr/lib/glib-2.0/include -I${sysrootdir}/usr/include
-LDFLAGS += $(shell perl ${parentsdir}/libcmd.pl ${sysrootdir} -ljpeg $(shell ${pkgvars} pkg-config ${libs} --libs 2> /dev/null))
+CFLAGS += -fPIC
+LDFLAGS += $(shell ${parentsdir}/libcmd.pl ${sysrootdir} -ljpeg $(shell ${pkgvars} pkg-config ${libs} --libs 2> /dev/null))
 LDFLAGS += -pthread
 
 ifeq (${plat}, pc)
@@ -22,7 +23,8 @@ $(1)
 endef
 else
 define targetsh
-make open-and-telnet-${plat} cmd="/mount-and-docmd.sh ${myip} ${PWD} $1"
+${parentsdir}/add-exportfs.sh ${PWD}
+make open-and-telnet-${plat} cmd="/mount-and-docmd.sh ${myip} ${PWD} $1 #expect-interact"
 endef
 endif
 
@@ -35,6 +37,21 @@ $1: $1.o
 	${CC} -o $$@ $$< ${LDFLAGS}
 $1-test: $1 
 	$$(call targetsh,./$1)
+endef
+
+fdsrc_src := ${parentsdir}/gstfdsrc
+fdsrc_pat := fd
+fdsrc_list := !psrc !p_src !U_SRC !uSrc
+
+define my-gst-plugin
+.PHONY: $2.c $2.h
+$2.c $2.h:
+	${parentsdir}/make-my-gst-plugin.pl ${$1_src} ${$1_pat} $2 ${$1_list}
+$2.o: $2.h
+$2.so: $2.o
+	${CC} -shared -o $$@ $$< ${LDFLAGS}
+inspect-$2: $2.so
+	$$(call targetsh,gst-inspect $2)
 endef
 
 world: all

@@ -13,9 +13,13 @@ $e->expect(2, '-re', "# ") or exit 123;
 $e->send("cd /root\n");
 $e->expect(2, '-re', "# ") or exit 123;
 if ($cmd) {
-	$e->send("$cmd ; echo noweof\n");
-	$e->expect(1000000000, '-re', "^noweof") or die 'fuck';
-	exit 0
+	if ($cmd =~ "expect-interact") {
+		$e->send("$cmd\n");
+	} else {
+		$e->send("$cmd ; echo noweof\n");
+		$e->expect(1000000000, '-re', "^noweof") or die 'fuck';
+		exit 0;
+	}
 }
 $e->interact();
 
