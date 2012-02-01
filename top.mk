@@ -41,10 +41,9 @@ endef
 
 fdsrc_src := ${parentsdir}/gstfdsrc
 fdsrc_pat := fd
-fdsrc_list := !psrc !p_src !U_SRC !uSrc
+fdsrc_list := {p}src {p}_src {U}_SRC {u}Src
 
 define my-gst-plugin
-.PHONY: $2.c $2.h
 $2.c $2.h:
 	${parentsdir}/make-my-gst-plugin.pl ${$1_src} ${$1_pat} $2 ${$1_list}
 $2.o: $2.h

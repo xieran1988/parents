@@ -9,9 +9,9 @@ plugin_init (GstPlugin * plugin)
       0, "Template plugin");
    */
   return gst_element_register (plugin, 
-			"!p", // modify here
+			"{p}", // modify here
 			GST_RANK_NONE,
-      gst_!P_get_type());
+      gst_{a2}_get_type());
 }
 
 /* PACKAGE: this is usually set by autotools depending on some _INIT macro
@@ -21,7 +21,7 @@ plugin_init (GstPlugin * plugin)
  */
 #ifndef PACKAGE
 // modify here
-#define PACKAGE "!ppackage"
+#define PACKAGE "{p}package"
 #endif
 
 /* gstreamer looks for this structure to register plugins
@@ -32,8 +32,8 @@ GST_PLUGIN_DEFINE (
     GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
 		// and modify here
-    "!pplugin",
-    "My !p plugin",
+    "{p}plugin",
+    "My {p} plugin",
     plugin_init,
     "0.10",
     "LGPL",

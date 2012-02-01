@@ -85,9 +85,12 @@
 #define S_ISREG(m)	(((m)&S_IFREG)==S_IFREG)
 #endif
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include <errno.h>
 
-#include "fdsrc.h"
+#include "{p}.h"
 
 static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
     GST_PAD_SRC,
