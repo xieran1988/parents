@@ -24,7 +24,7 @@ endef
 else
 define targetsh
 ${parentsdir}/add-exportfs.sh ${PWD}
-make open-and-telnet-${plat} cmd="/mount-and-docmd.sh ${myip} ${PWD} $1 #expect-interact"
+make open-and-telnet-${plat} cmd="/mount-and-docmd.sh ${myip} ${PWD} $1"
 endef
 endif
 
@@ -82,6 +82,9 @@ tifs-8168:
 mmcfs-8168:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 fs uImage-dm816x-evm.bin mmc args8168
 
+ssh-3530:
+	ssh root@${ip3530}
+
 telnet-3530:
 	${parentsdir}/telnet.pl ${ip3530} "${cmd}"
 
@@ -106,4 +109,5 @@ poweroff-all:
 	${parentsdir}/pwr.pl 1
 	${parentsdir}/pwr.pl 3
 
-
+rebuild-ti-gst:
+	${parentsdir}/rebuild-ti-gst.sh

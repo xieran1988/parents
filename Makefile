@@ -29,7 +29,6 @@ remake-simplefs:
 	sudo ./mksimplefs.sh
 	make poweroff-all
 
-ti-gst:
-	make -C 
-
+gstreamer_ti:
+	svn checkout --username anonymous https://gstreamer.ti.com/svn/gstreamer_ti/trunk/gstreamer_ti
 

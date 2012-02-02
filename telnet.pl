@@ -13,7 +13,8 @@ $e->expect(2, '-re', "# ") or exit 123;
 $e->send("cd /root\n");
 $e->expect(2, '-re', "# ") or exit 123;
 if ($cmd) {
-	if ($cmd =~ "expect-interact") {
+#	if ($cmd =~ "expect-interact") {
+	if (1) {
 		$e->send("$cmd\n");
 	} else {
 		$e->send("$cmd ; echo noweof\n");

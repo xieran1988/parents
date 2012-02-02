@@ -26,6 +26,10 @@ sed "
 " -i gstreamer-ti*/configure.ac
 
 sed "
+11s/configure//
+" -i gstreamer-ti*/Makefile.external
+
+sed "
 150s,physPtr.*,physPtr=0;,
 " -i dmai_2_20_00_14/packages/ti/sdo/dmai/linux/omap3530/Display_fbdev.c
 
