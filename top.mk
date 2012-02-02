@@ -111,3 +111,7 @@ poweroff-all:
 
 rebuild-ti-gst:
 	${parentsdir}/rebuild-ti-gst.sh
+
+rebuild-rtsp:
+	${parentsdir}/rebuild-rtsp.sh
+
