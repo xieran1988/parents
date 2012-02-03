@@ -1,6 +1,5 @@
 
 ifneq (${plat}, pc)
-crossprefix := ${toolchaindir}/bin/arm-none-linux-gnueabi-
 pkgvars := PKG_CONFIG_SYSROOT_DIR="${sysrootdir}" PKG_CONFIG_PATH="${sysrootdir}/usr/lib/pkgconfig/"
 CFLAGS += \
 	-O3 -P \
@@ -16,6 +15,26 @@ CFLAGS += -I${sysrootdir}/usr/lib/glib-2.0/include -I${sysrootdir}/usr/include
 CFLAGS += -fPIC
 LDFLAGS += $(shell ${parentsdir}/libcmd.pl ${sysrootdir} -ljpeg $(shell ${pkgvars} pkg-config ${libs} --libs 2> /dev/null))
 LDFLAGS += -pthread
+
+LDFLAGS_TIGST += -Wl,${tigstbuilddir}/src/gstticodecplugin_omap3530/linker.cmd 
+LDFLAGS_TIGST += -Wl,${dvsdkdir}/c6accel_1_01_00_02/soc/c6accelw/lib/c6accelw_omap3530.a470MV
+CFLAGS_TIGST += -I${dvsdkdir}/dvsdk-3530/xdctools_3_16_03_36/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/dsplink_1_65_00_02 
+CFLAGS_TIGST += -I${dvsdkdir}/framework-components_2_25_03_07/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/codec-engine_2_26_01_09/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/xdais_6_26_00_02/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/codecs-omap3530_4_00_00_00/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/linuxutils_2_25_05_11/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/dmai_2_20_00_14/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/local-power-manager_1_24_02_09/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/edma3lld_01_11_00_03/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/c6accel_1_01_00_02/soc/c6accelw 
+CFLAGS_TIGST += -I${dvsdkdir}/c6accel_1_01_00_02/soc/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/xdctools_3_16_03_36/packages 
+CFLAGS_TIGST += -I${dvsdkdir}/gstreamer-ti_svnr884/src/gstticodecplugin_omap3530/.. 
+CFLAGS_TIGST += -Dxdc_target_types__=gnu/targets/arm/std.h 
+CFLAGS_TIGST += -Dxdc_target_name__=GCArmv5T 
+CFLAGS_TIGST += -Dxdc_cfg__header__=${tigstbuilddir}/src/gstticodecplugin_omap3530/package/cfg/gstticodecplugin_omap3530_xv5T.h
 
 ifeq (${plat}, pc)
 define targetsh
@@ -41,11 +60,15 @@ endef
 
 fdsrc_src := ${parentsdir}/gstfdsrc
 fdsrc_pat := fd
-fdsrc_list := {p}src {p}_src {U}_SRC {u}Src
+fdsrc_list := {p}_src {p}src {U}_SRC {u}Src
+
+valve_src := ${parentsdir}/gstvalve
+valve_pat := valve
+valve_list := {p} {U} {u}
 
 define my-gst-plugin
 $2.c $2.h:
-	${parentsdir}/make-my-gst-plugin.pl ${$1_src} ${$1_pat} $2 ${$1_list}
+	${parentsdir}/gen-my-gst-plugin.pl ${$1_src} ${$1_pat} $2 ${$1_list}
 $2.o: $2.h
 $2.so: $2.o
 	${CC} -shared -o $$@ $$< ${LDFLAGS}
@@ -109,9 +132,16 @@ poweroff-all:
 	${parentsdir}/pwr.pl 1
 	${parentsdir}/pwr.pl 3
 
-rebuild-ti-gst:
+rebuild-ti-gst: rebuild-dmai
 	${parentsdir}/rebuild-ti-gst.sh
 
 rebuild-rtsp:
 	${parentsdir}/rebuild-rtsp.sh
+
+rebuild-dmai:
+	${parentsdir}/rebuild-dmai.sh
+
+git-commit-and-push:
+	git commit -a -m "`date`"
+	
 
