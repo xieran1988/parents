@@ -145,4 +145,8 @@ git-commit-and-push:
 	git commit -a -m "`date`"
 	git push
 	
+top-3530:
+	make open-and-telnet-3530 cmd="top -d1"
+
+
 
