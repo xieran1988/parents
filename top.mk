@@ -143,5 +143,6 @@ rebuild-dmai:
 
 git-commit-and-push:
 	git commit -a -m "`date`"
+	git push
 	
 
