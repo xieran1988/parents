@@ -132,8 +132,8 @@ poweroff-all:
 	${parentsdir}/pwr.pl 1
 	${parentsdir}/pwr.pl 3
 
-rebuild-ti-gst: rebuild-dmai
-	${parentsdir}/rebuild-ti-gst.sh
+rebuild-gst-ti: rebuild-dmai
+	${parentsdir}/$@.sh
 
 rebuild-rtsp:
 	${parentsdir}/rebuild-rtsp.sh
