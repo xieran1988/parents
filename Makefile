@@ -26,6 +26,7 @@ dvsdk-3530: arm-2009q1 dvsdk_omap3530-evm_4_01_00_09_setuplinux gstreamer_ti
 	./dvsdk_omap3530-evm_4_01_00_09_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
 	cp -R gstreamer_ti/ti_build/ticodecplugin/src/* dvsdk-3530/gstreamer-ti*/src
 	./build-dvsdk-3530.sh dvsdk-3530
+	./reconf-gst-ti.sh
 
 simplefs:
 	sudo ./mksimplefs.sh
