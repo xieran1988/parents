@@ -12,9 +12,9 @@ my @arr = (
 
 # speed 9600 baud; line = 0; -brkint -imaxbel
 
--e "/dev/ttyUSB2" or die 'not connected';
+-e "/dev/ttyUSB1" or die 'not connected';
 my $s = $arr[int($ARGV[0])]; 
-open T, ">/dev/ttyUSB2";
+open T, ">/dev/ttyUSB1";
 print T $s;
 close T;
 

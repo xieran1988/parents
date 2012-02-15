@@ -26,6 +26,7 @@ cd ..
 	tar -xf /tmp/ti.tar 
 	sed -i '$a. /usr/share/ti/gst/omap3530/loadmodules.sh' etc/init.d/rcS 
 }
+#cp -v ../dm6446_h264* usr/share/ti/ti-codecs-server/cs.x64P
 cd ..
 
 exit 0

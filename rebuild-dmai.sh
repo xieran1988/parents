@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd $dvsdkdir && \
+cd $parentsdir/dvsdk-3530 && \
 make dmai
