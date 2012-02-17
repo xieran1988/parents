@@ -13,6 +13,11 @@ emafs: sbc_ncast_fs20111123.7z
 	sudo mv sbc_ncast_fs20111123/u-boot.bin $@
 	rm -rf sbc_ncast_fs20111123
 
+emafs-3730: ema-3730-boot.tar ema-3730-fs.tar.bz2
+	mkdir $@
+	sudo tar -xf ema-3730-boot.tar -C $@
+	sudo tar -xjf ema-3730-fs.tar.bz2 -C $@
+
 make-bootsd-3730:
 	sudo imgdir=emafs-3730 ./make-bootsd.pl
 
@@ -37,6 +42,7 @@ simplefs:
 remake-simplefs:
 	sudo rm -rf simplefs
 	sudo ./mksimplefs.sh
+	make rebuild-gst-ti
 	make poweroff-all
 
 gstreamer_ti:

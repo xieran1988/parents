@@ -70,17 +70,17 @@ ubootshell-3530:
 ubootshell-8168:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 ubootshell
 
-emafs-3530:
+boot-emafs-3530:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs nand ${parentsdir}/emafs args3530
 
-emafs-3730:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs emafs-3730/uImage ${parentsdir}/emafs-3730 args3530
+boot-emafs-3730:
+	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs ${parentsdir}/emafs-3730/uImage ${parentsdir}/emafs-3730 args3730
 
 simplefs-3530:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs nand ${parentsdir}/simplefs args3530
 
 simplefs-3730:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs emafs-3730/uImage ${parentsdir}/simplefs args3530
+	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs ${parentsdir}/emafs-3730/uImage ${parentsdir}/simplefs args3730
 
 simplefs-8168:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 fs uImage-dm816x-evm.bin simplefs args8168
@@ -97,11 +97,17 @@ ssh-3530:
 telnet-3530:
 	${parentsdir}/telnet.pl ${ip3530} "${cmd}"
 
+telnet-3730:
+	${parentsdir}/telnet.pl ${ip3730} "${cmd}"
+
 telnet-8168:
 	${parentsdir}/telnet.pl ${ip8168} "${cmd}"
 
 enter-fs-and-exit-3530:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 enterfs nand ${parentsdir}/simplefs args3530
+
+enter-fs-and-exit-3730:
+	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 enterfs ${parentsdir}/emafs-3730/uImage ${parentsdir}/simplefs args3730
 
 enter-fs-and-exit-8168:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 enterfs uImage-dm816x-evm.bin simplefs args8168
@@ -109,6 +115,10 @@ enter-fs-and-exit-8168:
 open-and-telnet-3530: 
 	make telnet-3530 cmd="${cmd}" || \
 		( make enter-fs-and-exit-3530; make telnet-3530 cmd="${cmd}" )
+
+open-and-telnet-3730: 
+	make telnet-3730 cmd="${cmd}" || \
+		( make enter-fs-and-exit-3730; make telnet-3730 cmd="${cmd}" )
 
 open-and-telnet-8168: 
 	make telnet-8168 cmd="${cmd}" || \
@@ -119,13 +129,13 @@ poweroff-all:
 	${parentsdir}/pwr.pl 3
 
 rebuild-gst-ti: rebuild-dmai
-	${parentsdir}/$@.sh
+	${parentsdir}/$@.sh > /dev/null
 
 rebuild-rtsp:
-	${parentsdir}/rebuild-rtsp.sh
+	${parentsdir}/rebuild-rtsp.sh > /dev/null
 
 rebuild-dmai:
-	${parentsdir}/rebuild-dmai.sh
+	${parentsdir}/rebuild-dmai.sh > /dev/null
 
 git-commit-and-push:
 	git commit -a -m "`date`"
@@ -133,6 +143,4 @@ git-commit-and-push:
 	
 top-3530:
 	make open-and-telnet-3530 cmd="top -d1"
-
-
 

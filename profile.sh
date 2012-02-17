@@ -8,4 +8,5 @@ export gstbuilddir=$buildrootdir/output/build/gstreamer-0.10.35
 export tigstbuilddir=$parentsdir/dvsdk-3530/gstreamer-ti_svnr884/src
 export myip=192.168.0.174
 export ip3530=192.168.0.36
-export ip8168=192.168.0.37
+export ip3730=192.168.0.37
+export ip8168=192.168.0.38

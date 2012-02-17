@@ -62,8 +62,9 @@ my $gateip = "192.168.1.1";
 my $net = "192.168.1.0";
 my $armip;
 
-if ($args eq 'args3530') {
-	$armip = $ENV{'ip3530'};
+if ($args eq 'args3530' || $args eq 'args3730') {
+	$args =~ /args(....)/;
+	$armip = $ENV{"ip$1"};
 	my $cfg = "
 auto eth0
 	iface eth0 inet static
@@ -76,9 +77,14 @@ auto eth0
 #	`sudo echo "route add default gw $gateip" > $fspath/etc/myprofile`;
 	`sudo cat /etc/resolv.conf > $fspath/etc/resolv.conf`;
 
+	my $model = $args eq 'args3730' ? 
+		'EVM37X-B1-3990-LUAC0' 
+		: 
+		'SBC35X-B1-1880-LUAC0';
+
 	my $a2 = "setenv bootargs " .
 		"console=ttyS0,115200n8 " .
-		"boardmodel=SBC35X-B1-1880-LUAC0 " .
+		"boardmodel=$model " .
 		"vram=12M omapfb.mode=dvi:1024x768MR-16\@60 omapdss.def_disp=dvi " .
 		"mem=99M\@0x80000000 mem=128M\@0x88000000 " .
 		"mpurate=1000 " .
@@ -86,6 +92,7 @@ auto eth0
 		"ip=$armip:$myip:$gateip:255.255.255.0:arm:eth0 " .
 		""
 		#ip=<client-ip>:<server-ip>:<gw-ip>:<netmask>:<hostname>:<device>:<autoconf>
+		#"boardmodel=SBC35X-B1-1880-LUAC0 " 
 		#"boardmodel=SBC35X-B1-1880-LUAC0 " 
 		;
 	uboot $a2;

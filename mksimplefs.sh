@@ -1,33 +1,47 @@
 #!/bin/bash
 
-fs=simplefs
+p=`pwd`
+fs=$p/simplefs
+rm -rf $fs
 mkdir $fs
-tar -xf buildroot/output/images/rootfs.tar -C $fs 
-cd $fs/etc/init.d
-mv S40network K40network
-cd ../..
-sed -i '$atelnetd -l /bin/sh' etc/init.d/rcS 
-sed -i '$amount ' etc/init.d/rcS 
+cd $fs
+tar -xf $p/buildroot/output/images/rootfs.tar -C $fs 
+( cd etc/init.d; mv S40network K40network )
+cat >> etc/init.d/rcS <<E
+telnetd -l /bin/sh
+#. /usr/share/ti/gst/omap3530/loadmodules.sh
+(
+cd opt/dvsdk/omap3530/
+insmod cmemk.ko allowOverlap=1 phys_start=0x86300000 phys_end=0x87300000 \\
+	        pools=1x5250000,6x829440,1x345600,1x691200,1x1
+. loadmodules.sh
+)
+E
 chmod 777 root
 mkdir etc/profile.d
 echo 'echo *** WELCOME ! YOU HACKIT INTO IT ! ***' > etc/profile.d/a.sh
-cp ../profile.sh etc/profile.d/b.sh
+cp $p/profile.sh etc/profile.d/b.sh
 rm etc/securetty
-cp ../inittab-3530 etc/inittab
-cp ../dvsdk-3530/gstreamer-ti_svnr884/src/.libs/libgstticodecplugin.so usr/lib/gstreamer-0.10
-cp ../mount-and-docmd.sh .
-cd ..
-{
-	cd emafs
-	tar -cf /tmp/ti.tar \
-		usr/share/ti/ \
-		lib/modules/ 
-	cd ../simplefs
-	tar -xf /tmp/ti.tar 
-	sed -i '$a. /usr/share/ti/gst/omap3530/loadmodules.sh' etc/init.d/rcS 
-}
-#cp -v ../dm6446_h264* usr/share/ti/ti-codecs-server/cs.x64P
-cd ..
+cp $p/inittab-3530 etc/inittab
+cp $p/mount-and-docmd.sh .
+(
+cd $p/emafs
+#tar -cf - usr/share/ti/ \
+#	lib/modules/ \
+#	| tar -xf -C $fs
+)
+
+(
+cd $p/emafs-3730
+echo $fs
+tar -cf - \
+	opt/dvsdk/omap3530/*.sh \
+	opt/dvsdk/omap3530/*.ko \
+	opt/dvsdk/omap3530/cs.x64P \
+	lib/modules/ \
+	| tar -xf - -C $fs
+)
+sed -i '/insmod cmemk/d' opt/dvsdk/omap3530/loadmodules.sh
 
 exit 0
 
