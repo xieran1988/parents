@@ -13,6 +13,9 @@ emafs: sbc_ncast_fs20111123.7z
 	sudo mv sbc_ncast_fs20111123/u-boot.bin $@
 	rm -rf sbc_ncast_fs20111123
 
+make-bootsd-3730:
+	sudo imgdir=emafs-3730 ./make-bootsd.pl
+
 arm-2009q1: arm-2009q1-203-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 	tar -jxf $< 
 

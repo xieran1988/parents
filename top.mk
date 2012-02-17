@@ -73,8 +73,14 @@ ubootshell-8168:
 emafs-3530:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs nand ${parentsdir}/emafs args3530
 
+emafs-3730:
+	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs emafs-3730/uImage ${parentsdir}/emafs-3730 args3530
+
 simplefs-3530:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs nand ${parentsdir}/simplefs args3530
+
+simplefs-3730:
+	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs emafs-3730/uImage ${parentsdir}/simplefs args3530
 
 simplefs-8168:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 fs uImage-dm816x-evm.bin simplefs args8168

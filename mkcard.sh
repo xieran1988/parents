@@ -14,9 +14,6 @@ if [ $# -ne 1 ]; then
 fi
 
 DRIVE=$1
-
-dd if=/dev/zero of=$DRIVE bs=1024 count=1024
-
 SIZE=`fdisk -l $DRIVE | grep Disk | awk '{print $5}'`
 
 echo DISK SIZE - $SIZE bytes
@@ -24,6 +21,8 @@ if [ "$SIZE" != "1948254208" ] ; then
 	echo invalid sdcard
 	exit 1
 fi
+
+dd if=/dev/zero of=$DRIVE bs=1024 count=1024
 
 CYLINDERS=`echo $SIZE/255/63/512 | bc`
 
@@ -58,9 +57,9 @@ fi
 
 mkdir -p /tmp/boot && \
 mount ${DRIVE}1 /tmp/boot && \
-cp -v emafs/u-boot.bin /tmp/boot && \
-cp -v emafs/MLO /tmp/boot && \
-cp -v emafs/uImage /tmp/boot && \
+cp -v $imgdir/u-boot.bin /tmp/boot && \
+cp -v $imgdir/MLO /tmp/boot && \
+cp -v $imgdir/uImage /tmp/boot && \
 sync && \
 umount /tmp/boot && \
 rmdir /tmp/boot
