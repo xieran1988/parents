@@ -2,8 +2,6 @@
 
 p=`pwd`
 fs=$p/simplefs
-rm -rf $fs
-mkdir $fs
 cd $fs
 tar -xf $p/buildroot/output/images/rootfs.tar -C $fs 
 ( cd etc/init.d; mv S40network K40network )
@@ -11,10 +9,11 @@ cat >> etc/init.d/rcS <<E
 telnetd -l /bin/sh
 #. /usr/share/ti/gst/omap3530/loadmodules.sh
 (
-cd opt/dvsdk/omap3530/
+cd /opt/3530/
+grep 37X /proc/cmdline && cd /opt/3730
 insmod cmemk.ko allowOverlap=1 phys_start=0x86300000 phys_end=0x87300000 \\
 	        pools=1x5250000,6x829440,1x345600,1x691200,1x1
-. loadmodules.sh
+. /opt/loadmodules.sh
 )
 E
 chmod 777 root
@@ -31,17 +30,20 @@ cd $p/emafs
 #	| tar -xf -C $fs
 )
 
+mkdir opt/3530
+mkdir opt/3730
 (
-cd $p/emafs-3730
-echo $fs
-tar -cf - \
-	opt/dvsdk/omap3530/*.sh \
-	opt/dvsdk/omap3530/*.ko \
-	opt/dvsdk/omap3530/cs.x64P \
-	lib/modules/ \
-	| tar -xf - -C $fs
+cd $p/emafs-3730/opt/dvsdk/omap3530
+cp *.ko $fs/opt/3730
+cp loadmodules.sh $fs/opt
 )
-sed -i '/insmod cmemk/d' opt/dvsdk/omap3530/loadmodules.sh
+cp `find $p/emafs/lib/modules/ -name *.ko` $fs/opt/3530
+(
+cd $p/emafs/
+tar -cf - usr/share/ti/ti-codecs-server | tar -xf - -C $fs
+)
+#install $p/emafs-3730/opt/dvsdk/omap3530/cs.x64P
+sed -i '/insmod cmemk/d' opt/loadmodules.sh
 
 exit 0
 

@@ -82,6 +82,14 @@ simplefs-3530:
 simplefs-3730:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs ${parentsdir}/emafs-3730/uImage ${parentsdir}/simplefs args3730
 
+boot-tifs-3730-use-ti-kern: 
+	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs ${parentsdir}/tifs-3730/boot/uImage-2.6.37 \
+		${parentsdir}/tifs-3730 args3730 ${parentsdir}/tifs-3730/boot/u-boot.bin
+
+boot-tifs-3730-use-ema-kern: 
+	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs ${parentsdir}/linux-ema-3730/uImage \
+		${parentsdir}/tifs-3730 args3730
+
 simplefs-8168:
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 fs uImage-dm816x-evm.bin simplefs args8168
 

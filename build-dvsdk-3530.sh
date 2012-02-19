@@ -13,6 +13,7 @@ sed "
 /^export LIBTOOL_SYSROOT_PATH/s,\$TARGET_SYS,,
 /^export PKG_CONFIG_SYSROOT_DIR/s,\$TARGET_SYS,,
 /^export PKG_CONFIG_PATH/s,\$TARGET_SYS,,
+/^export CC/s,\$TARGET_SYS,,
 " -i linux-devkit/environment-setup
 
 sed "
@@ -41,12 +42,12 @@ sed "
 /^CPP_FLAGS +=.*[^C]$/s,$, -fPIC,
 " -i c6accel_1_01_00_02/soc/c6accelw/Makefile
 
-rm -rf gstreamer-ti_svnr884/src/*
-ln -sv $parentsdir/gst-ti/* gstreamer-ti_svnr884/src/
+rm -rf gstreamer-ti*/src/*
+ln -sv $parentsdir/gst-ti/* gstreamer-ti*/src/
 
 ln -svf $parentsdir/dmai-3530/Capture.c dmai_2_20_00_14/packages/ti/sdo/dmai/linux/omap3530/
 
-cp $parentsdir/dvsdk-3530-patch/Makefile .
+cp $parentsdir/dvsdk-patch/Makefile-3530 .
 
 make dsplink_arm && \
 make dsplink_dsp && \

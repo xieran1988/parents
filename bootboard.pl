@@ -13,6 +13,7 @@ my $uimage = $ARGV[3];
 my $fs = $ARGV[4] if $ARGV[4];
 my $fspath;
 my $args = $ARGV[5] if $ARGV[5];
+my $tiuboot = $ARGV[6] if $ARGV[6];
 
 sub uboot_exp { 
 	$e->expect(1000000, '-re', "^(OMAP3|TI8168)") or die;
@@ -60,11 +61,26 @@ if ($fs ne 'mmc' && $fs ne 'none') {
 my $myip = $ENV{'myip'};
 my $gateip = "192.168.1.1";
 my $net = "192.168.1.0";
-my $armip;
+$args =~ /args(....)/;
+my $armip = $ENV{"ip$1"};
+
+uboot "setenv serverip $myip";
+uboot "setenv ipaddr $armip";
+
+if ($cmd =~ /ti-uboot/) {
+	`cp $tiuboot /var/lib/tftpboot`;
+	my $b = `basename $tiuboot`;
+	uboot "tftp \${loadaddr} $b";
+	$e->send("go \${loadaddr}\n");
+	$e->expect(10, '-re', "^Hit") or die;
+	$e->send("c");
+	uboot_exp;
+	uboot "setenv serverip $myip";
+	uboot "setenv ipaddr $armip";
+	uboot "setenv ethaddr 00:11:22:33:44:55";
+}
 
 if ($args eq 'args3530' || $args eq 'args3730') {
-	$args =~ /args(....)/;
-	$armip = $ENV{"ip$1"};
 	my $cfg = "
 auto eth0
 	iface eth0 inet static
@@ -75,15 +91,18 @@ auto eth0
 ";
 #	`sudo echo "$cfg" > $fspath/etc/network/interfaces`;
 #	`sudo echo "route add default gw $gateip" > $fspath/etc/myprofile`;
-	`sudo cat /etc/resolv.conf > $fspath/etc/resolv.conf`;
+	`sudo rm -rf $fspath/etc/resolv.conf`;
+	`sudo cp /etc/resolv.conf $fspath/etc/resolv.conf`;
 
 	my $model = $args eq 'args3730' ? 
 		'EVM37X-B1-3990-LUAC0' 
 		: 
 		'SBC35X-B1-1880-LUAC0';
 
+	my $tty = $cmd =~ /ti-uboot/ ? "ttyO2" : "ttyS0";
+
 	my $a2 = "setenv bootargs " .
-		"console=ttyS0,115200n8 " .
+		"console=$tty,115200n8 " .
 		"boardmodel=$model " .
 		"vram=12M omapfb.mode=dvi:1024x768MR-16\@60 omapdss.def_disp=dvi " .
 		"mem=99M\@0x80000000 mem=128M\@0x88000000 " .
@@ -99,7 +118,6 @@ auto eth0
 }
 
 if ($args eq 'args8168') {
-	$armip = $ENV{'ip8168'};
 	my $afs = $fs eq 'mmc' ? 
 		"root=/dev/mmcblk0p2 " :
 		"root=/dev/nfs nfsroot=$myip:$fspath,port=2049 ".
@@ -118,15 +136,13 @@ if ($uimage eq 'nand') {
 #uboot "mmc init; fatload mmc 0 \${loadaddr} uImage; bootm \${loadaddr}";
 	uboot "nand read \${loadaddr} 280000 400000";
 } else {
-	uboot "setenv serverip $myip";
-	uboot "setenv ipaddr $armip";
 	`cp $uimage /var/lib/tftpboot`;
 	my $b = `basename $uimage`;
 	uboot "tftp \${loadaddr} $b";
 }
 $e->send("bootm \${loadaddr}\n");
 
-if ($cmd eq 'fs') {
+if ($cmd =~ /fs/) {
 	$e->interact();
 }
 

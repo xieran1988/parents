@@ -21,10 +21,13 @@ emafs-3730: ema-3730-boot.tar ema-3730-fs.tar.bz2
 make-bootsd-3730:
 	sudo imgdir=emafs-3730 ./make-bootsd.pl
 
+make-bootsd-3730-ti:
+	sudo imgdir=tifs-3730/boot ./make-bootsd.pl
+
 arm-2009q1: arm-2009q1-203-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 	tar -jxf $< 
 
-dvsdk-3530: arm-2009q1 dvsdk_omap3530-evm_4_01_00_09_setuplinux gstreamer_ti
+dvsdk-3530: arm-2009q1 dvsdk_omap3530-evm_4_01_00_09_setuplinux
 	@echo " -------------------------------------------"
 	@echo " -------------------------------------------"
 	@echo " ---- PLEASE Install dvsdk to ${PWD}/$@ ---- "
@@ -32,15 +35,37 @@ dvsdk-3530: arm-2009q1 dvsdk_omap3530-evm_4_01_00_09_setuplinux gstreamer_ti
 	@echo " -------------------------------------------"
 	@echo " -------------------------------------------"
 	./dvsdk_omap3530-evm_4_01_00_09_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
-	cp -R gstreamer_ti/ti_build/ticodecplugin/src/* dvsdk-3530/gstreamer-ti*/src
 	./build-dvsdk-3530.sh dvsdk-3530
 	./reconf-gst-ti.sh
+
+dvsdk-3730: dvsdk_dm3730-evm_04_03_00_06_setuplinux
+	./dvsdk_dm3730-evm_04_03_00_06_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
+
+remake-tifs-3730:
+	sudo rm -rf tifs-3730
+	make tifs-3730
+
+tifs-3730: dvsdk-3730
+	mkdir $@
+	sudo tar -xf dvsdk-3730/filesystem/dvsdk-dm37x-evm-rootfs.tar.gz -C $@
+	sudo ./mktifs.sh ${parentsdir}/$@
+
+linux-ema-3730: linux-ema-3730.tar.bz2
+	mkdir $@
+	tar -xvjf $< -C $@
+	mv $@/*/* $@
+	ln -sv arch/arm/boot/uImage $@/
+
+make-linux-ema-3730: linux-ema-3730
+	cd $</* && \
+	make ARCH=arm CROSS_COMPILE=${crossprefix}
 
 simplefs:
 	sudo ./mksimplefs.sh
 
 remake-simplefs:
 	sudo rm -rf simplefs
+	mkdir simplefs
 	sudo ./mksimplefs.sh
 	make rebuild-gst-ti
 	make poweroff-all

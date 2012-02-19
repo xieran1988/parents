@@ -62,6 +62,8 @@ TICodecPlugin_init (GstPlugin * TICodecPlugin)
 {
     Char    *env_value;
 
+		printf("CE Runtime init\n");
+
     /* Initialize the codec engine run time */
     CERuntime_init();
 
