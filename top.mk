@@ -13,7 +13,7 @@ OBJDUMP := ${crossprefix}objdump
 CFLAGS += $(shell ${pkgvars} pkg-config ${libs} --cflags 2> /dev/null)
 CFLAGS += -I${sysrootdir}/usr/lib/glib-2.0/include -I${sysrootdir}/usr/include
 CFLAGS += -fPIC
-LDFLAGS += $(shell ${parentsdir}/libcmd.pl ${sysrootdir} -ljpeg $(shell ${pkgvars} pkg-config ${libs} --libs 2> /dev/null))
+LDFLAGS += $(shell ${parentsdir}/pkg-config.pl ${sysrootdir} -ljpeg $(shell ${pkgvars} pkg-config ${libs} --libs 2> /dev/null))
 LDFLAGS += -pthread
 
 ifeq (${plat}, pc)
@@ -23,7 +23,7 @@ endef
 else
 define targetsh
 ${parentsdir}/add-exportfs.sh ${PWD}
-make open-and-telnet-${plat} cmd="/mount-and-docmd.sh ${myip} ${PWD} $1"
+make ${test} cmd="/mount-and-docmd.sh ${myip} ${PWD} $1"
 endef
 endif
 
@@ -58,39 +58,42 @@ endef
 
 world: all
 
-kermitshell-3530:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 kermitshell
+aaa bbb ccc:
+	echo $@
 
-kermitshell-8168:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 kermitshell
+boot := ${parentsdir}/boot-board.pl
 
-ubootshell-3530:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 ubootshell
+boot-kermit-3530:
+	${boot} -3530 -kermit
 
-ubootshell-8168:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 ubootshell
+boot-kermit-8168:
+	${boot} -8168 -kermit
 
-boot-emafs-3530:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs nand ${parentsdir}/emafs args3530
+boot-uboot-3530:
+	${boot} -3530 -uboot
 
-boot-emafs-3730:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs ${parentsdir}/emafs-3730/uImage ${parentsdir}/emafs-3730 args3730
+boot-uboot-8168:
+	${boot} -8168 -uboot
 
-simplefs-3530:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs nand ${parentsdir}/simplefs args3530
+boot-emafs-3530: emafs-3530
+	${boot} -3530 -nfs=$< 
 
-simplefs-3730:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs ${parentsdir}/emafs-3730/uImage ${parentsdir}/simplefs args3730
+boot-emafs-3730: emafs-3730
+	${boot} -3730 -nfs=$<
 
-boot-tifs-3730-use-ti-kern: 
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs ${parentsdir}/tifs-3730/boot/uImage-2.6.37 \
-		${parentsdir}/tifs-3730 args3730 ${parentsdir}/tifs-3730/boot/u-boot.bin
+telnet-simplefs-3530: simplefs
+	${boot} -3530 -nfs=$< -telnet
 
-boot-tifs-3730-use-ema-kern: 
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 fs ${parentsdir}/linux-ema-3730/uImage \
-		${parentsdir}/tifs-3730 args3730
+telnet-simplefs-3730: simplefs
+	${boot} -3730 -nfs=$< -telnet
 
-simplefs-8168:
+boot-tifs-3730-ti-kern: tifs-3730
+	${boot} -3730 -nfs=$< -kern=$</boot/uImage 
+
+boot-tifs-3730-use-ema-kern: tifs-3730 emafs-3730
+	${boot} -3730 -nfs=$< -kern=emafs-3730/boot/uImage 
+
+boot-simplefs-8168: simplefs
 	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 fs uImage-dm816x-evm.bin simplefs args8168
 
 tifs-8168:
@@ -102,36 +105,6 @@ mmcfs-8168:
 ssh-3530:
 	ssh root@${ip3530}
 
-telnet-3530:
-	${parentsdir}/telnet.pl ${ip3530} "${cmd}"
-
-telnet-3730:
-	${parentsdir}/telnet.pl ${ip3730} "${cmd}"
-
-telnet-8168:
-	${parentsdir}/telnet.pl ${ip8168} "${cmd}"
-
-enter-fs-and-exit-3530:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 enterfs nand ${parentsdir}/simplefs args3530
-
-enter-fs-and-exit-3730:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc3530 0 enterfs ${parentsdir}/emafs-3730/uImage ${parentsdir}/simplefs args3730
-
-enter-fs-and-exit-8168:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 enterfs uImage-dm816x-evm.bin simplefs args8168
-
-open-and-telnet-3530: 
-	make telnet-3530 cmd="${cmd}" || \
-		( make enter-fs-and-exit-3530; make telnet-3530 cmd="${cmd}" )
-
-open-and-telnet-3730: 
-	make telnet-3730 cmd="${cmd}" || \
-		( make enter-fs-and-exit-3730; make telnet-3730 cmd="${cmd}" )
-
-open-and-telnet-8168: 
-	make telnet-8168 cmd="${cmd}" || \
-		( make enter-fs-and-exit-8168; make telnet-8168 cmd="${cmd}" )
-	
 poweroff-all:
 	${parentsdir}/pwr.pl 1
 	${parentsdir}/pwr.pl 3

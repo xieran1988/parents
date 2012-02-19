@@ -12,12 +12,10 @@ mkdir -p /dev/shm
 mount -a
 telnetd -l /bin/sh
 cd /opt/dvsdk
-insmod cmemk.ko phys_start=0x85000000 phys_end=0x86000000 pools=20x4096,10x131072,2x1048576
-chmod 666 /dev/cmem
-insmod dsplinkk.ko
-chmod 666 /dev/dsplink
-insmod lpm_omap3530.ko
-chmod 666 /dev/lpm*
+#insmod cmemk.ko phys_start=0x85000000 phys_end=0x86000000 pools=20x4096,10x131072,2x1048576
+#insmod cmemk.ko phys_start=0x8f000000 phys_end=0x90000000 pools=20x4096,10x131072,2x1048576
+insmod cmemk.ko phys_start=0x86300000 phys_end=0x87300000 \\
+	        pools=1x5250000,6x829440,1x345600,1x691200,1x1
 E
 sed -i 's/ttyO0/ttyS0/' etc/inittab
 sed -i 's/id:5/id:3/' etc/inittab

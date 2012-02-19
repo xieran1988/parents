@@ -95,17 +95,20 @@ auto eth0
 	`sudo cp /etc/resolv.conf $fspath/etc/resolv.conf`;
 
 	my $model = $args eq 'args3730' ? 
-		'EVM37X-B1-3990-LUAC0' 
-		: 
+		'EVM37X-B1-3990-LUAC0' : 
 		'SBC35X-B1-1880-LUAC0';
 
 	my $tty = $cmd =~ /ti-uboot/ ? "ttyO2" : "ttyS0";
+
+	my $mem = $args =~ /3530/ ? 
+		"mem=99M\@0x80000000 mem=128M\@0x88000000 " :
+		"mem=80M";
 
 	my $a2 = "setenv bootargs " .
 		"console=$tty,115200n8 " .
 		"boardmodel=$model " .
 		"vram=12M omapfb.mode=dvi:1024x768MR-16\@60 omapdss.def_disp=dvi " .
-		"mem=99M\@0x80000000 mem=128M\@0x88000000 " .
+		"$mem " .
 		"mpurate=1000 " .
 		"root=/dev/nfs nfsroot=$myip:$fspath,port=2049 " .
 		"ip=$armip:$myip:$gateip:255.255.255.0:arm:eth0 " .
@@ -148,4 +151,37 @@ if ($cmd =~ /fs/) {
 
 $e->expect(1000000, "-re", "^Welcome");
 exit 0
+
+set line /dev/ttyUSB0
+set speed 115200
+set carrier-watch off
+set handshake none
+set flow-control none
+robust
+connect
+#!/usr/bin/env perl
+
+use Expect;
+use warnings;
+use strict;
+
+my $ip = $ARGV[0];
+my $cmd = $ARGV[1];
+my $e = new Expect;
+$e->spawn("telnet $ip");
+$e->expect(2, '-re', "^Escape") or exit 123;
+$e->expect(2, '-re', "# ") or exit 123;
+$e->send("cd /root\n");
+$e->expect(2, '-re', "# ") or exit 123;
+if ($cmd) {
+#	if ($cmd =~ "expect-interact") {
+	if (1) {
+		$e->send("$cmd\n");
+	} else {
+		$e->send("$cmd ; echo noweof\n");
+		$e->expect(1000000000, '-re', "^noweof") or die 'fuck';
+		exit 0;
+	}
+}
+$e->interact();
 

@@ -11,7 +11,9 @@ telnetd -l /bin/sh
 (
 cd /opt/3530/
 grep 37X /proc/cmdline && cd /opt/3730
-insmod cmemk.ko allowOverlap=1 phys_start=0x86300000 phys_end=0x87300000 \\
+#insmod cmemk.ko allowOverlap=1 phys_start=0x86300000 phys_end=0x87300000 \\
+#	        pools=1x5250000,6x829440,1x345600,1x691200,1x1
+insmod cmemk.ko phys_start=0x86300000 phys_end=0x87300000 \\
 	        pools=1x5250000,6x829440,1x345600,1x691200,1x1
 . /opt/loadmodules.sh
 )

@@ -73,3 +73,10 @@ remake-simplefs:
 gstreamer_ti:
 	svn checkout --username anonymous https://gstreamer.ti.com/svn/gstreamer_ti/trunk/gstreamer_ti
 
+try-tifs-3730:
+	 make remake-tifs-3730
+	 make boot-tifs-3730
+
+try-simplefs-3730:
+	make remake-simplefs
+	make simplefs-3730
