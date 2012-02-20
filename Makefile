@@ -1,11 +1,15 @@
 
 include top.mk
 
+libav:
+	git clone git@github.com:xieran1988/libav.git
+
 buildroot:
-	git clone git://git.buildroot.net/buildroot
+	git clone git@github.com:xieran1988/buildroot.git
+#	git clone git://git.buildroot.net/buildroot
 	
-emafs: sbc_ncast_fs20111123.7z
-	7z x sbc_ncast_fs20111123.7z
+emafs: ema-3530-fs.7z
+	7z x $<.7z
 	mkdir $@
 	sudo tar -jxf sbc_ncast_fs20111123/sbc_ncast_fs1123.tar.bz2 -C $@ 
 	sudo mv sbc_ncast_fs20111123/MLO $@
@@ -29,10 +33,7 @@ arm-2009q1: arm-2009q1-203-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
 
 dvsdk-3530: arm-2009q1 dvsdk_omap3530-evm_4_01_00_09_setuplinux
 	@echo " -------------------------------------------"
-	@echo " -------------------------------------------"
-	@echo " ---- PLEASE Install dvsdk to ${PWD}/$@ ---- "
 	@echo " ---- toolchain path ${PWD}/$</bin ---- "
-	@echo " -------------------------------------------"
 	@echo " -------------------------------------------"
 	./dvsdk_omap3530-evm_4_01_00_09_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
 	./build-dvsdk-3530.sh dvsdk-3530
@@ -80,3 +81,4 @@ try-tifs-3730:
 try-simplefs-3730:
 	make remake-simplefs
 	make simplefs-3730
+

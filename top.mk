@@ -1,10 +1,11 @@
 
 ifneq (${plat}, pc)
-pkgvars := PKG_CONFIG_SYSROOT_DIR="${sysrootdir}" PKG_CONFIG_PATH="${sysrootdir}/usr/lib/pkgconfig/"
-CFLAGS += \
-	-O3 -P \
-	-mfloat-abi=softfp -mfpu=neon -ftree-vectorize \
-	-mcpu=cortex-a8 -mtune=cortex-a8 -Wall 
+pkgvars += PKG_CONFIG_SYSROOT_DIR="${sysrootdir}" 
+pkgvars += PKG_CONFIG_PATH="${sysrootdir}/usr/lib/pkgconfig/"
+CFLAGS += -O3 -P 
+CFLAGS += -mfloat-abi=softfp 
+CFLAGS += -mfpu=neon -ftree-vectorize 
+CFLAGS += -mcpu=cortex-a8 -mtune=cortex-a8 -Wall 
 else
 sysrootdir := /
 endif
@@ -13,7 +14,9 @@ OBJDUMP := ${crossprefix}objdump
 CFLAGS += $(shell ${pkgvars} pkg-config ${libs} --cflags 2> /dev/null)
 CFLAGS += -I${sysrootdir}/usr/lib/glib-2.0/include -I${sysrootdir}/usr/include
 CFLAGS += -fPIC
-LDFLAGS += $(shell ${parentsdir}/pkg-config.pl ${sysrootdir} -ljpeg $(shell ${pkgvars} pkg-config ${libs} --libs 2> /dev/null))
+LDFLAGS += $(shell ${parentsdir}/pkg-config.pl \
+					 ${sysrootdir} -ljpeg \
+					 $(shell ${pkgvars} pkg-config ${libs} --libs 2> /dev/null))
 LDFLAGS += -pthread
 
 ifeq (${plat}, pc)
@@ -23,7 +26,7 @@ endef
 else
 define targetsh
 ${parentsdir}/add-exportfs.sh ${PWD}
-make ${test} cmd="/mount-and-docmd.sh ${myip} ${PWD} $1"
+make ${test} c="/mount-and-docmd.sh ${myip} ${PWD} $1"
 endef
 endif
 
@@ -82,10 +85,10 @@ boot-emafs-3730: emafs-3730
 	${boot} -3730 -nfs=$<
 
 telnet-simplefs-3530: simplefs
-	${boot} -3530 -nfs=$< -telnet
+	${boot} -3530 -nfs=$< -telnet -cmd="$c"
 
 telnet-simplefs-3730: simplefs
-	${boot} -3730 -nfs=$< -telnet
+	${boot} -3730 -nfs=$< -telnet -cmd="$c"
 
 boot-tifs-3730-ti-kern: tifs-3730
 	${boot} -3730 -nfs=$< -kern=$</boot/uImage 
@@ -93,35 +96,23 @@ boot-tifs-3730-ti-kern: tifs-3730
 boot-tifs-3730-use-ema-kern: tifs-3730 emafs-3730
 	${boot} -3730 -nfs=$< -kern=emafs-3730/boot/uImage 
 
-boot-simplefs-8168: simplefs
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 fs uImage-dm816x-evm.bin simplefs args8168
-
-tifs-8168:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 fs tifs-8168/boot/uImage-2.6.37 tifs-8168 args8168
-
-mmcfs-8168:
-	${parentsdir}/bootboard.pl ${parentsdir}/kermrc8168 2 fs uImage-dm816x-evm.bin mmc args8168
-
-ssh-3530:
-	ssh root@${ip3530}
-
 poweroff-all:
-	${parentsdir}/pwr.pl 1
-	${parentsdir}/pwr.pl 3
+	${boot} -3530 -pwroff
+	${boot} -3730 -pwroff
 
 rebuild-gst-ti: rebuild-dmai
 	${parentsdir}/$@.sh > /dev/null
 
 rebuild-rtsp:
-	${parentsdir}/rebuild-rtsp.sh > /dev/null
+	${parentsdir}/$@.sh > /dev/null
 
 rebuild-dmai:
-	${parentsdir}/rebuild-dmai.sh > /dev/null
+	${parentsdir}/$@.sh > /dev/null
 
 git-commit-and-push:
 	git commit -a -m "`date`"
 	git push
 	
-top-3530:
-	make open-and-telnet-3530 cmd="top -d1"
+top:
+	$(call sh, top -d1)
 
