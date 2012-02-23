@@ -20,13 +20,13 @@ LDFLAGS += $(shell ${parentsdir}/pkg-config.pl \
 LDFLAGS += -pthread
 
 ifeq (${plat}, pc)
-define targetsh
+define sh
 $(1)
 endef
 else
-define targetsh
+define sh
 ${parentsdir}/add-exportfs.sh ${PWD}
-make ${test} c="/mount-and-docmd.sh ${myip} ${PWD} $1"
+make ${test} c="/mount-and-docmd.sh ${myip} ${PWD} $1" -C ${parentsdir}
 endef
 endif
 
@@ -61,9 +61,6 @@ endef
 
 world: all
 
-aaa bbb ccc:
-	echo $@
-
 boot := ${parentsdir}/boot-board.pl
 
 boot-kermit-3530:
@@ -84,16 +81,22 @@ boot-emafs-3530: emafs-3530
 boot-emafs-3730: emafs-3730
 	${boot} -3730 -nfs=$<
 
+boot-burnkern-3730:
+	${boot} -3730 -burnkern
+
 telnet-simplefs-3530: simplefs
 	${boot} -3530 -nfs=$< -telnet -cmd="$c"
 
 telnet-simplefs-3730: simplefs
 	${boot} -3730 -nfs=$< -telnet -cmd="$c"
 
+telnet-simplefs-3730-ema-kern: simplefs
+	${boot} -3730 -nfs=$< -kern=linux-ema-3730/uImage -telnet -cmd="$c"
+
 boot-tifs-3730-ti-kern: tifs-3730
 	${boot} -3730 -nfs=$< -kern=$</boot/uImage 
 
-boot-tifs-3730-use-ema-kern: tifs-3730 emafs-3730
+boot-tifs-3730-ema-kern: tifs-3730 emafs-3730
 	${boot} -3730 -nfs=$< -kern=emafs-3730/boot/uImage 
 
 poweroff-all:
@@ -107,6 +110,9 @@ rebuild-rtsp:
 	${parentsdir}/$@.sh > /dev/null
 
 rebuild-dmai:
+	${parentsdir}/$@.sh > /dev/null
+
+rebuild-gst-alsasrc:
 	${parentsdir}/$@.sh > /dev/null
 
 git-commit-and-push:

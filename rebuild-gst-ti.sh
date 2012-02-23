@@ -33,7 +33,5 @@ arm-none-linux-gnueabi-gcc -shared  -fPIC -DPIC \
 	-Wl,$parentsdir/dvsdk-3530/c6accel_1_01_00_02/soc/c6accelw/lib/c6accelw_omap3530.a470MV \
  	-pthread -Wl,-soname -Wl,libgstticodecplugin.so -Wl,-version-script -Wl,.libs/libgstticodecplugin.ver \
 	-o .libs/libgstticodecplugin.so && \
-sudo cp -v .libs/libgstticodecplugin.so $parentsdir/simplefs/usr/lib/gstreamer-0.10 && \
-cd $builddir/gst-plugins-base-0.10.35/ext/alsa && \
-make && \
-sudo cp -v .libs/libgstalsa.so $parentsdir/simplefs/usr/lib/gstreamer-0.10/libgstalsa.so 
+sudo cp -v .libs/libgstticodecplugin.so $parentsdir/simplefs/usr/lib/gstreamer-0.10 
+

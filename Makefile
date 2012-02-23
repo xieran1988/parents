@@ -36,11 +36,12 @@ dvsdk-3530: arm-2009q1 dvsdk_omap3530-evm_4_01_00_09_setuplinux
 	@echo " ---- toolchain path ${PWD}/$</bin ---- "
 	@echo " -------------------------------------------"
 	./dvsdk_omap3530-evm_4_01_00_09_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
-	./build-dvsdk-3530.sh dvsdk-3530
+	./build-dvsdk-3530.sh
 	./reconf-gst-ti.sh
 
-dvsdk-3730: dvsdk_dm3730-evm_04_03_00_06_setuplinux
+dvsdk-3730: dvsdk_dm3730-evm_04_03_00_06_setuplinux dvsdk-3530 linux-ema-3730
 	./dvsdk_dm3730-evm_04_03_00_06_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
+	./build-dvsdk-3730.sh
 
 remake-tifs-3730:
 	sudo rm -rf tifs-3730
@@ -53,13 +54,13 @@ tifs-3730: dvsdk-3730
 
 linux-ema-3730: linux-ema-3730.tar.bz2
 	mkdir $@
-	tar -xvjf $< -C $@
-	mv $@/*/* $@
+	tar -xjf $< -C $@ --strip=1
 	ln -sv arch/arm/boot/uImage $@/
 
 make-linux-ema-3730: linux-ema-3730
-	cd $</* && \
-	make ARCH=arm CROSS_COMPILE=${crossprefix}
+	cd $< && \
+	make ARCH=arm CROSS_COMPILE=${crossprefix} && \
+	make ARCH=arm CROSS_COMPILE=${crossprefix} uImage
 
 simplefs:
 	sudo ./mksimplefs.sh
@@ -75,10 +76,18 @@ gstreamer_ti:
 	svn checkout --username anonymous https://gstreamer.ti.com/svn/gstreamer_ti/trunk/gstreamer_ti
 
 try-tifs-3730:
-	 make remake-tifs-3730
-	 make boot-tifs-3730
+	make remake-tifs-3730
+	make boot-tifs-3730
 
 try-simplefs-3730:
 	make remake-simplefs
-	make simplefs-3730
+	make telnet-simplefs-3730
+
+try-simplefs-3730-ema-kern:
+	make remake-simplefs
+	make telnet-simplefs-3730-ema-kern
+
+try-simplefs-3530:
+	make remake-simplefs
+	make telnet-simplefs-3530
 
