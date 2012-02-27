@@ -46,8 +46,37 @@ cd /sys/class/sound
 for i in control* pcm* mixer timer; do
 	mknod /dev/snd/\$i c \`cat \$i/dev | sed "s/:/ /"\`
 done
+
+#amixer set 'DAC1 Analog' off
+#amixer set 'DAC2 Analog' on
+#amixer set 'Codec Operation Mode' 'Option 1 (audio)'
+#
+amixer set 'Analog' 5
+#amixer set TX1 'Analog'
+#amixer set 'TX1 Digital' 12
+#amixer set 'Analog Left AUXL' nocap
+#amixer set 'Analog Right AUXR' nocap
+amixer set 'Analog Left Main Mic' cap
+#amixer set 'Analog Left Headset Mic' nocap
+
+mkdir /hd
+mount /dev/sda2 /hd
+lighttpd -f /lity.conf
+
 )
 E
+
+cat > lity.conf <<EE
+server.document-root = "/hd" 
+server.port = 80
+mimetype.assign = (
+  ".html" => "text/html", 
+  ".xml" => "text/xml",
+  ".jpg" => "image/jpeg",
+)
+EE
+
+
 chmod 777 root
 mkdir etc/profile.d
 echo 'echo *** WELCOME ! YOU HACKIT INTO IT ! ***' > etc/profile.d/a.sh

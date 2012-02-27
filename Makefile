@@ -72,6 +72,10 @@ remake-simplefs:
 	make rebuild-gst-ti
 	make poweroff-all
 
+remake-gst-ffmpeg:
+	cd buildroot && make ffmpeg-reconfigure && make gst-ffmpeg-reconfigure
+	make remake-simplefs
+
 gstreamer_ti:
 	svn checkout --username anonymous https://gstreamer.ti.com/svn/gstreamer_ti/trunk/gstreamer_ti
 
