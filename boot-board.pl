@@ -128,7 +128,7 @@ if ($loaduboot) {
 
 if ($board eq '3530' or $board eq '3730') {
 	my $mem = $board eq '3730' ? 
-		"mem=99M\@0x80000000 " :
+		"mem=99M\@0x80000000 mem=384M\@0x88000000" :
 		"mem=99M\@0x80000000 mem=128M\@0x88000000 " ;
 	my $tty = "ttyS0";
 	my $model = $board eq '3730' ? 
