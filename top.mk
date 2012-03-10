@@ -17,7 +17,10 @@ CFLAGS += -fPIC
 LDFLAGS += $(shell ${parentsdir}/pkg-config.pl \
 					 ${sysrootdir} -ljpeg \
 					 $(shell ${pkgvars} pkg-config ${libs} --libs 2> /dev/null))
+#LDFLAGS += ${sysrootdir}/lib/libpthread.so.0
+#LDFLAGS += ${sysrootdir}/lib/libc.so.6
 LDFLAGS += -pthread
+LDFLAGS += --sysroot=${sysrootdir}
 
 ifeq (${plat}, pc)
 define sh
@@ -114,6 +117,10 @@ rebuild-dmai:
 
 rebuild-gst-alsasrc:
 	${parentsdir}/$@.sh > /dev/null
+
+rebuild-mod-auth-ticket: ${parentsdir}/mod-auth-ticket-for-lighttpd
+	make -C $<
+	sudo cp -v $</*.so simplefs/usr/lib/lighttpd
 
 git-commit-and-push:
 	git commit -a -m "`date`"

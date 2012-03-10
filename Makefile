@@ -4,6 +4,9 @@ include top.mk
 libav:
 	git clone git@github.com:xieran1988/libav.git
 
+mod-auth-ticket-for-lighttpd:
+	git clone git@github.com:xieran1988/mod-auth-ticket-for-lighttpd.git
+
 buildroot:
 	git clone git@github.com:xieran1988/buildroot.git
 #	git clone git://git.buildroot.net/buildroot
@@ -70,6 +73,7 @@ remake-simplefs:
 	mkdir simplefs
 	sudo ./mksimplefs.sh
 	make rebuild-gst-ti
+	make rebuild-mod-auth-ticket
 	make poweroff-all
 
 remake-gst-ffmpeg:
