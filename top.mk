@@ -41,7 +41,7 @@ define single-target
 $1: $1.o
 	${CC} -o $$@ $$< ${LDFLAGS}
 $1-test: $1 
-	$$(call targetsh,./$1)
+	$$(call sh,./$1)
 endef
 
 fdsrc_src := ${parentsdir}/gstfdsrc
@@ -59,10 +59,13 @@ $2.o: $2.h
 $2.so: $2.o
 	${CC} -shared -o $$@ $$< ${LDFLAGS}
 inspect-$2: $2.so
-	$$(call targetsh,gst-inspect $2)
+	$$(call sh,gst-inspect $2)
 endef
 
 world: all
+
+login:
+	$(call sh,)
 
 boot := ${parentsdir}/boot-board.pl
 

@@ -62,21 +62,12 @@ amixer set 'Analog Left Headset Mic' nocap
 
 mkdir /hd
 mount /dev/sda2 /hd
-lighttpd -f /lity.conf
+lighttpd -f /lighttpd.conf
 
 )
 E
 
-cat > lity.conf <<EE
-server.document-root = "/hd" 
-server.port = 80
-mimetype.assign = (
-  ".html" => "text/html", 
-  ".xml" => "text/xml",
-  ".jpg" => "image/jpeg",
-)
-EE
-
+cp $p/lighttpd.conf .
 
 chmod 777 root
 mkdir etc/profile.d
