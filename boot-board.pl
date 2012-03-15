@@ -8,6 +8,10 @@ my %A;
 my $board;
 my $nfs;
 my $kern;
+my $burnmlo;
+my $burnuboot;
+my $burnkern;
+my $burnubi;
 my $loaduboot;
 my $cmd;
 my %sertbl = qw/3530 2 3730 1/;
@@ -15,9 +19,14 @@ my %pwrtbl = qw/3530 4 3730 0/;
 my $e;
 
 for my $a (@ARGV) {
+	print "arg: $a\n";
 	$board = $1 if $a =~ /-(3530|3730|8168)/;
 	$nfs = $1 if $a =~ /-nfs=(.*)/;
 	$kern = $1 if $a =~ /-kern=(.*)/;
+	$burnmlo = $1 if $a =~ /-burnmlo=(.*)/;
+	$burnuboot = $1 if $a =~ /-burnuboot=(.*)/;
+	$burnkern = $1 if $a =~ /-burnkern=(.*)/;
+	$burnubi = $1 if $a =~ /-burnubi=(.*)/;
 	$loaduboot = $1 if $a =~ /-loaduboot=(.*)/;
 	$cmd = $1 if $a =~ /-cmd=(.*)/;
 	$A{$a}++;
@@ -81,7 +90,6 @@ $e->spawn("kermit /tmp/kermrc");
 $e->expect(10, '-re', "^--------") or die;
 end if exists $A{'-kermit'};
 
-
 sub uboot_exp {
 	$e->expect(1000000, '-re', "^(OMAP3|TI8168)") or die;
 }
@@ -93,38 +101,59 @@ sub waituboot {
 	$e->send("c");
 	uboot_exp;
 }
+sub tftp {
+	my ($u) = @_;
+	uboot "setenv serverip $myip";
+	uboot "setenv ipaddr $armip";
+	uboot "setenv ethaddr 00:11:22:33:44:55";
+	`cp $u /var/lib/tftpboot/a`;
+	uboot "tftp \${loadaddr} a";
+}
 
 waituboot;
 
-if (exists $A{'-burnkern'}) {
+if (exists $A{'-eraseall'}) {
+	uboot "nandecc sw";
+	uboot "nand erase";
+}
+
+if ($burnmlo) {
+	uboot "nandecc hw";
+	uboot "nand erase 0 80000";
+	tftp $burnmlo;
+	uboot "nand write.i \${loadaddr} 0 80000";
+}
+
+if ($burnuboot) {
+	uboot "nandecc sw";
+	uboot "nand erase 80000 160000";
+	tftp $burnuboot;
+	uboot "nand write.i \${loadaddr} 80000 160000"
+}
+
+if (exists $A{'-burnkernmmc'}) {
 	uboot "mmc init";
 	uboot "fatload mmc 0:1 80000000 uImage"; 
 	uboot "nandecc sw";
 	uboot "nand erase 280000 400000";
 	uboot "nand write.i 80000000 280000 400000";
-	exit;
 }
 
-end if exists $A{'-uboot'} or !$nfs;
-
-$nfs = `realpath $nfs`;
-chomp $nfs;
-`./add-exportfs.sh $nfs`;
-
-sub tftp {
-	my ($u) = @_;
-	`cp $u /var/lib/tftpboot/a`;
-	uboot "setenv serverip $myip";
-	uboot "setenv ipaddr $armip";
-	uboot "setenv ethaddr 00:11:22:33:44:55";
-	uboot "tftp \${loadaddr} a";
+if ($burnkern) {
+	uboot "nandecc sw";
+	uboot "nand erase 280000 400000";
+	tftp $burnkern;
+	uboot "nand write.i \${loadaddr} 280000 400000";
 }
 
-if ($loaduboot) {
-	tftp $loaduboot;
-	$e->send("go \${loadaddr}\n");
-	waituboot;
+if ($burnubi) {
+	uboot "nandecc sw";
+	uboot "nand erase 680000 8000000";
+	tftp $burnubi;
+	uboot "nand write.i \${loadaddr} 680000 \${filesize}";
 }
+
+my $bootargs;
 
 if ($board eq '3530' or $board eq '3730') {
 	my $mem = $board eq '3730' ? 
@@ -133,16 +162,38 @@ if ($board eq '3530' or $board eq '3730') {
 	my $tty = "ttyS0";
 	my $model = $board eq '3730' ? 
 		'SBC37X-A1-3990-LUAC0' : 'SBC35X-B1-1880-LUAC0';
-	uboot "setenv bootargs " .
+	$bootargs = 
 		"console=$tty,115200n8 " .
 		"boardmodel=$model " .
 		"vram=12M omapfb.mode=dvi:1024x768MR-16\@60 omapdss.def_disp=dvi " .
 		"$mem " .
 		"mpurate=1000 " .
-		"root=/dev/nfs nfsroot=$myip:$nfs " .
-		"ip=$armip:$myip:$gateip:255.255.255.0:arm:eth0 " .
 		""
 		;
+}
+
+if ($nfs) {
+	$nfs = `realpath $nfs`;
+	chomp $nfs;
+	`./add-exportfs.sh $nfs`;
+	$bootargs .= 
+		"root=/dev/nfs nfsroot=$myip:$nfs " .
+		"ip=$armip:$myip:$gateip:255.255.255.0:arm:eth0 ";
+}
+if (exists $A{'-nandboot'}) {
+	$bootargs .= "root=ubi0:rootfs ubi.mtd=4 rootfstype=ubifs";
+}
+
+uboot "setenv nandargs setenv bootargs $bootargs";
+uboot "saveenv";
+
+exit if exists $A{'-exituboot'};
+end if exists $A{'-uboot'};
+
+if ($loaduboot) {
+	tftp $loaduboot;
+	$e->send("go \${loadaddr}\n");
+	waituboot;
 }
 
 if ($kern) {

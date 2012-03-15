@@ -67,6 +67,13 @@ world: all
 login:
 	$(call sh,)
 
+lighttpd:
+	$(call sh, lighttpd -D -f /lighttpd.conf)
+
+make-ubifs-simplefs: simplefs
+	sudo mkfs.ubifs -r simplefs -m 2048 -e 129024 -c 1998 -o ubifs.img 
+	sudo ubinize -o ubi.img -m 2048 -p 128KiB -s 512 ubinize.cfg
+
 boot := ${parentsdir}/boot-board.pl
 
 boot-kermit-3530:
@@ -78,6 +85,9 @@ boot-kermit-8168:
 boot-uboot-3530:
 	${boot} -3530 -uboot
 
+boot-uboot-3730:
+	${boot} -3730 -uboot
+
 boot-uboot-8168:
 	${boot} -8168 -uboot
 
@@ -87,8 +97,19 @@ boot-emafs-3530: emafs-3530
 boot-emafs-3730: emafs-3730
 	${boot} -3730 -nfs=$<
 
-boot-burnkern-3730:
-	${boot} -3730 -burnkern
+boot-burnkernmmc-3730:
+	${boot} -3730 -burnkernmmc -exituboot
+
+boot-burnall-3730:
+	${boot} -3730 \
+		-eraseall \
+		-burnmlo=emafs-3730/MLO \
+		-burnuboot=emafs-3730/u-boot.bin \
+		-burnkern=emafs-3730/uImage \
+		-burnubi=ubi.img \
+		-nandboot \
+		-ubootdelay0 \
+		-exituboot
 
 telnet-simplefs-3530: simplefs
 	${boot} -3530 -nfs=$< -telnet -cmd="$c"
