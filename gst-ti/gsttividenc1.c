@@ -1512,17 +1512,17 @@ gst_tividenc1_encode(GstTIVidenc1 *videnc1, GstBuffer *inBuf,
 			static void *h;
 			static void (*init)();
 			static void (*fini)();
-			static void (*proc)(void *);
-			static struct stat cs, os;
+			static int (*proc)(void *);
 			const char *lib = "./capfilter.so";
 
-			if (!(i % 5) && !stat(lib, &cs) && cs.st_mtime != os.st_mtime) {
-				os = cs;
-				if (h) {
-					GST_INFO("%s: dlclose", lib);
-					fini();
-					dlclose(h);
-				}
+			GST_INFO("%s: proc", lib);
+			if (h && proc(GST_BUFFER_DATA(inBuf))) { 
+				GST_INFO("%s: dlclose", lib);
+				fini();
+				dlclose(h);
+				h = NULL;
+			}
+			if (!h) {
 				GST_INFO("%s: dlopen", lib);
 				h = dlopen(lib, RTLD_NOW);
 				init = (typeof(init))dlsym(h, "algo_init");
@@ -1531,18 +1531,17 @@ gst_tividenc1_encode(GstTIVidenc1 *videnc1, GstBuffer *inBuf,
 				GST_INFO("%s: init, %p", lib, h);
 				init();
 			}
-			GST_INFO("%s: proc", lib);
-			if (h) 
-				proc(GST_BUFFER_DATA(inBuf));
 			i++;
 		}
 
+		/*
 		{
 			unsigned char *p = GST_BUFFER_DATA(inBuf);
 			int y;
 			for (y = 300; y < 400; y++)
 				memset(p + y*720*2 + 200, 0xff, 200*2);
 		}
+		*/
 
     /* Make sure the input buffer is the expected size */
     if (GST_BUFFER_SIZE(inBuf) != videnc1->upstreamBufSize) {
