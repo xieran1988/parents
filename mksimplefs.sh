@@ -64,6 +64,11 @@ mkdir /hd
 mount /dev/sda2 /hd
 lighttpd -f /lighttpd.conf
 
+grep nfs /proc/cmdline || {
+	cd /root/
+	./init.sh
+}
+
 )
 E
 

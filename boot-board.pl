@@ -14,8 +14,8 @@ my $burnkern;
 my $burnubi;
 my $loaduboot;
 my $cmd;
-my %sertbl = qw/3530 2 3730 1/;
-my %pwrtbl = qw/3530 4 3730 0/;
+my %sertbl = qw/8168 2 3730 1/;
+my %pwrtbl = qw/8168 2 3730 0/;
 my $e;
 
 for my $a (@ARGV) {
@@ -56,6 +56,7 @@ if (exists $A{'-telnet'}) {
 		end;
 	}
 }
+
 
 my @arr = (
 	"\x55\x01\x01\x02\x00\x00\x00\x59", # 1
@@ -105,7 +106,7 @@ sub tftp {
 	my ($u) = @_;
 	uboot "setenv serverip $myip";
 	uboot "setenv ipaddr $armip";
-	uboot "setenv ethaddr 00:11:22:33:44:55";
+	uboot "setenv ethaddr 00:11:22:33:44:55" if $board ne '8168';
 	`cp $u /var/lib/tftpboot/a`;
 	uboot "tftp \${loadaddr} a";
 }
@@ -171,6 +172,11 @@ if ($board eq '3530' or $board eq '3730') {
 		""
 		;
 }
+if ($board eq '8168') {
+	$bootargs = 
+		"console=ttyO2,115200n8 rootwait rw mem=256M earlyprintk notifyk.vpssm3_sva=0xBF900000 vram=50M ti816xfb.vram=0:16M,1:16M,2:6M "
+		;
+}
 
 if ($nfs) {
 	$nfs = `realpath $nfs`;
@@ -201,7 +207,7 @@ if ($kern) {
 } else {
 	uboot "nand read \${loadaddr} 280000 400000";
 }
-$e->send("bootm \${loadaddr}\n");
+$e->send("run nandargs; bootm \${loadaddr}\n");
 
 if (exists $A{'-telnet'}) {
 	$e->expect(1000000, "-re", "^Welcome");

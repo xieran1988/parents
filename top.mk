@@ -1,19 +1,25 @@
 
-ifneq (${plat}, pc)
+ifeq (${plat}, a8)
 pkgvars += PKG_CONFIG_SYSROOT_DIR="${sysrootdir}" 
 pkgvars += PKG_CONFIG_PATH="${sysrootdir}/usr/lib/pkgconfig/"
 CFLAGS += -O3 -P 
 CFLAGS += -mfloat-abi=softfp 
 CFLAGS += -mfpu=neon -ftree-vectorize 
 CFLAGS += -mcpu=cortex-a8 -mtune=cortex-a8 -Wall 
-else
+endif
+
+ifeq (${plat}, pc)
 sysrootdir := /
 endif
+
 CC := ${crossprefix}gcc
 OBJDUMP := ${crossprefix}objdump
+
 CFLAGS += $(shell ${pkgvars} pkg-config ${libs} --cflags 2> /dev/null)
 CFLAGS += -I${sysrootdir}/usr/lib/glib-2.0/include -I${sysrootdir}/usr/include
 CFLAGS += -fPIC
+CFLAGS += -I.
+
 LDFLAGS += $(shell ${parentsdir}/pkg-config.pl \
 					 ${sysrootdir} -ljpeg \
 					 $(shell ${pkgvars} pkg-config ${libs} --libs 2> /dev/null))
@@ -66,6 +72,11 @@ world: all
 
 login:
 	$(call sh,)
+
+release: 
+	cd ${parentsdir} && make remake-simplefs
+	sudo cp -Rv ${release_objs} ${parentsdir}/simplefs/root
+	cd ${parentsdir} && make make-ubifs-simplefs
 
 lighttpd:
 	$(call sh, lighttpd -D -f /lighttpd.conf)
@@ -120,6 +131,9 @@ telnet-simplefs-3730: simplefs
 telnet-simplefs-3730-ema-kern: simplefs
 	${boot} -3730 -nfs=$< -kern=linux-ema-3730/uImage -telnet -cmd="$c"
 
+boot-tifs-8168: tifs-8168
+	${boot} -8168 -nfs=$< -kern=$</boot/uImage-2.6.37
+
 boot-tifs-3730-ti-kern: tifs-3730
 	${boot} -3730 -nfs=$< -kern=$</boot/uImage 
 
@@ -129,6 +143,7 @@ boot-tifs-3730-ema-kern: tifs-3730 emafs-3730
 poweroff-all:
 	${boot} -3530 -pwroff
 	${boot} -3730 -pwroff
+	${boot} -8168 -pwroff
 
 rebuild-gst-ti: rebuild-dmai
 	${parentsdir}/$@.sh > /dev/null

@@ -29,6 +29,11 @@
 #  include <config.h>
 #endif
 
+#include <dlfcn.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <gst/gst.h>
@@ -1370,7 +1375,7 @@ static gboolean gst_tividenc1_codec_start (GstTIVidenc1 *videnc1)
 
     GST_LOG("opening video encoder \"%s\"\n", videnc1->codecName);
 
-		if (1) {
+		if (0) {
 	   videnc1->hVe1 = Venc1_create(
 				 videnc1->hEngine,
 				 (char *)videnc1->codecName,
@@ -1502,6 +1507,43 @@ gst_tividenc1_encode(GstTIVidenc1 *videnc1, GstBuffer *inBuf,
 
     *outBuf = NULL;
 
+		{
+			static int i;
+			static void *h;
+			static void (*init)();
+			static void (*fini)();
+			static void (*proc)(void *);
+			static struct stat cs, os;
+			const char *lib = "./capfilter.so";
+
+			if (!(i % 5) && !stat(lib, &cs) && cs.st_mtime != os.st_mtime) {
+				os = cs;
+				if (h) {
+					GST_INFO("%s: dlclose", lib);
+					fini();
+					dlclose(h);
+				}
+				GST_INFO("%s: dlopen", lib);
+				h = dlopen(lib, RTLD_NOW);
+				init = (typeof(init))dlsym(h, "algo_init");
+				fini = (typeof(init))dlsym(h, "algo_fini");
+				proc = (typeof(proc))dlsym(h, "algo_proc");
+				GST_INFO("%s: init, %p", lib, h);
+				init();
+			}
+			GST_INFO("%s: proc", lib);
+			if (h) 
+				proc(GST_BUFFER_DATA(inBuf));
+			i++;
+		}
+
+		{
+			unsigned char *p = GST_BUFFER_DATA(inBuf);
+			int y;
+			for (y = 300; y < 400; y++)
+				memset(p + y*720*2 + 200, 0xff, 200*2);
+		}
+
     /* Make sure the input buffer is the expected size */
     if (GST_BUFFER_SIZE(inBuf) != videnc1->upstreamBufSize) {
         GST_ELEMENT_ERROR(videnc1, RESOURCE, NO_SPACE_LEFT,
@@ -1558,7 +1600,7 @@ gst_tividenc1_encode(GstTIVidenc1 *videnc1, GstBuffer *inBuf,
 		static char sps[128];
 
 		fn++;
-		GST_INFO("encoder frame %d len %d", fn, length);
+		GST_LOG("encoder frame %d len %d", fn, length);
 
     /* Create a DMAI transport buffer object to carry a DMAI buffer to
      * the source pad.  The transport buffer knows how to release the

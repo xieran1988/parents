@@ -46,9 +46,19 @@ dvsdk-3730: dvsdk_dm3730-evm_04_03_00_06_setuplinux dvsdk-3530 linux-ema-3730
 	./dvsdk_dm3730-evm_04_03_00_06_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
 	./build-dvsdk-3730.sh
 
+dvsdk-8168: arm-2009q1 ezsdk_dm816x-evm_5_03_00_09_setuplinux
+	@echo " -------------------------------------------"
+	@echo " ---- toolchain path ${PWD}/$</bin ---- "
+	@echo " -------------------------------------------"
+	./ezsdk_dm816x-evm_5_03_00_09_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
+
 remake-tifs-3730:
 	sudo rm -rf tifs-3730
 	make tifs-3730
+
+tifs-8168: dvsdk-8168
+	mkdir $@
+	sudo tar -xf dvsdk-8168/filesystem/ezsdk-dm816x-evm-rootfs.tar.gz -C $@
 
 tifs-3730: dvsdk-3730
 	mkdir $@
@@ -63,6 +73,14 @@ linux-ema-3730: linux-ema-3730.tar.bz2
 make-linux-ema-3730: linux-ema-3730
 	cd $< && \
 	make ARCH=arm CROSS_COMPILE=${crossprefix} && \
+	make ARCH=arm CROSS_COMPILE=${crossprefix} uImage
+
+linux: 
+	git clone git@github.com:xieran1988/linux.git
+
+make-linux-shell: linux
+	cd $< && \
+	ARCH=arm CROSS_COMPILE=${crossprefix} bash
 	make ARCH=arm CROSS_COMPILE=${crossprefix} uImage
 
 simplefs:
