@@ -78,9 +78,6 @@ release:
 	sudo cp -Rv ${release_objs} ${parentsdir}/simplefs/root
 	cd ${parentsdir} && make make-ubifs-simplefs
 
-lighttpd:
-	$(call sh, lighttpd -D -f /lighttpd.conf)
-
 make-ubifs-simplefs: simplefs
 	sudo mkfs.ubifs -r simplefs -m 2048 -e 129024 -c 1998 -o ubifs.img 
 	sudo ubinize -o ubi.img -m 2048 -p 128KiB -s 512 ubinize.cfg
