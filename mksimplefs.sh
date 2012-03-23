@@ -62,7 +62,6 @@ amixer set 'Analog Left Headset Mic' nocap
 
 mkdir /hd
 mount /dev/sda2 /hd
-lighttpd -f /lighttpd.conf
 
 grep nfs /proc/cmdline || {
 	cd /root/
@@ -71,8 +70,6 @@ grep nfs /proc/cmdline || {
 
 )
 E
-
-cp $p/lighttpd.conf .
 
 chmod 777 root
 mkdir etc/profile.d

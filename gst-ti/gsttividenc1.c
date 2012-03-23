@@ -1507,15 +1507,23 @@ gst_tividenc1_encode(GstTIVidenc1 *videnc1, GstBuffer *inBuf,
 
     *outBuf = NULL;
 
+		/*
+		GST_INFO("stat: start");
 		{
-			static int i;
+			struct stat cs;
+			stat("/default.xml", &cs);
+		}
+		GST_INFO("stat: end");
+		*/
+
+		{
 			static void *h;
 			static void (*init)();
 			static void (*fini)();
 			static int (*proc)(void *);
 			const char *lib = "./capfilter.so";
 
-			GST_INFO("%s: proc", lib);
+			//GST_INFO("%s: proc", lib);
 			if (h && proc(GST_BUFFER_DATA(inBuf))) { 
 				GST_INFO("%s: dlclose", lib);
 				fini();
@@ -1531,7 +1539,6 @@ gst_tividenc1_encode(GstTIVidenc1 *videnc1, GstBuffer *inBuf,
 				GST_INFO("%s: init, %p", lib, h);
 				init();
 			}
-			i++;
 		}
 
 		/*
