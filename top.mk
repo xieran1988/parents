@@ -35,7 +35,7 @@ endef
 else
 define sh
 ${parentsdir}/add-exportfs.sh ${PWD}
-make ${test} c="/mount-and-docmd.sh ${myip} ${PWD} $1" -C ${parentsdir}
+make ${test} c=". /mount-and-docmd.sh ${myip} ${PWD} $1" -C ${parentsdir}
 endef
 endif
 
@@ -71,7 +71,7 @@ endef
 world: all
 
 login:
-	$(call sh,)
+	$(call sh, /bin/sh)
 
 release: 
 	cd ${parentsdir} && make remake-simplefs
