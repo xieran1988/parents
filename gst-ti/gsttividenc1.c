@@ -35,6 +35,7 @@
 #include <unistd.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <gst/gst.h>
 #include <gst/video/gstvideosink.h>
@@ -1521,7 +1522,7 @@ gst_tividenc1_encode(GstTIVidenc1 *videnc1, GstBuffer *inBuf,
 			static void (*init)();
 			static void (*fini)();
 			static int (*proc)(void *);
-			const char *lib = "./capfilter.so";
+			const char *lib = getenv("CAPFILTER");
 
 			//GST_INFO("%s: proc", lib);
 			if (h && proc(GST_BUFFER_DATA(inBuf))) { 
