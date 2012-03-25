@@ -125,6 +125,9 @@ telnet-simplefs-3530: simplefs
 telnet-simplefs-3730: simplefs
 	${boot} -3730 -nfs=$< -telnet -cmd="$c"
 
+telnet-tifs-8168:
+	${boot} -8168 -nfs=$< -telnet -cmd="$c"
+
 telnet-simplefs-3730-ema-kern: simplefs
 	${boot} -3730 -nfs=$< -kern=linux-ema-3730/uImage -telnet -cmd="$c"
 
