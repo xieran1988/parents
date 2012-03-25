@@ -59,7 +59,8 @@ remake-tifs-3730:
 tifs-8168: dvsdk-8168
 	mkdir $@
 	sudo tar -xf dvsdk-8168/filesystem/ezsdk-dm816x-evm-rootfs.tar.gz -C $@
-	sudo sed -i "/start-stop-daemon --start/s,$$, -- -l /bin/sh," tifs-8168/etc/init.d/telnetd
+	sudo sed -i "/start-stop-daemon --start/s,$$, -- -l /bin/sh," $@/etc/init.d/telnetd
+	sudo echo "Welcome to tifs-8168" > $@/etc/issue
 
 tifs-3730: dvsdk-3730
 	mkdir $@
