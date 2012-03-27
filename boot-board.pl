@@ -78,17 +78,8 @@ exit if exists $A{"-pwroff"};
 print T $arr[$pwr];
 close T;
 
-`cat > /tmp/kermrc <<E
-set line /dev/ttyUSB$sertbl{$board}
-set speed 115200
-set carrier-watch off
-set handshake none
-set flow-control none
-robust
-connect
-E`;
 $e = new Expect;
-$e->spawn("kermit /tmp/kermrc");
+$e->spawn("kermit kermrc$sertbl{$board}");
 $e->expect(10, '-re', "^--------") or die;
 end if exists $A{'-kermit'};
 
