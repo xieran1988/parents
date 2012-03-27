@@ -119,6 +119,9 @@ boot-burnall-3730:
 		-ubootdelay0 \
 		-exituboot
 
+telnet-3730:
+	${boot} -3730 -telnet -cmd="$c" -noretry
+
 telnet-simplefs-3530: simplefs
 	${boot} -3530 -nfs=$< -telnet -cmd="$c"
 

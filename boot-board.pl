@@ -55,6 +55,7 @@ if (exists $A{'-telnet'}) {
 		}
 		end;
 	}
+	exit if exists $A{'-noretry'};
 }
 
 

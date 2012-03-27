@@ -119,3 +119,6 @@ try-simplefs-3530:
 	make remake-simplefs
 	make telnet-simplefs-3530
 
+build-dep:
+	sudo apt-get install realpath ckermit libexpect-perl
+
