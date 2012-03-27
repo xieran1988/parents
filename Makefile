@@ -8,7 +8,8 @@ mod-auth-ticket-for-lighttpd:
 	git clone git@github.com:xieran1988/mod-auth-ticket-for-lighttpd.git
 
 buildroot:
-	git clone git@github.com:xieran1988/buildroot.git
+#	git clone -b my git@github.com:xieran1988/buildroot.git
+	git clone -b my https://github.com/xieran1988/buildroot.git
 #	git clone git://git.buildroot.net/buildroot
 	
 emafs: ema-3530-fs.7z
