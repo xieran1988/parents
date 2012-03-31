@@ -49,6 +49,7 @@ ln -svf $parentsdir/dmai-3530/Capture.c dmai_2_20_00_14/packages/ti/sdo/dmai/lin
 
 cp $parentsdir/dvsdk-patch/Makefile-3530 .
 
+make linux && \
 make dsplink_arm && \
 make dsplink_dsp && \
 make dsplink_dsp_genpackage && \

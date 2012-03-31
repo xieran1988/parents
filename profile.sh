@@ -11,3 +11,4 @@ export myip=192.168.0.174
 export ip3530=192.168.0.35
 export ip3730=192.168.0.37
 export ip8168=192.168.0.68
+export proj="asys2 rec"

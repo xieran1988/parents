@@ -1534,11 +1534,13 @@ gst_tividenc1_encode(GstTIVidenc1 *videnc1, GstBuffer *inBuf,
 			if (!h) {
 				GST_INFO("%s: dlopen", lib);
 				h = dlopen(lib, RTLD_NOW);
-				init = (typeof(init))dlsym(h, "algo_init");
-				fini = (typeof(init))dlsym(h, "algo_fini");
-				proc = (typeof(proc))dlsym(h, "algo_proc");
-				GST_INFO("%s: init, %p", lib, h);
-				init();
+				if (h) {
+					init = (typeof(init))dlsym(h, "algo_init");
+					fini = (typeof(init))dlsym(h, "algo_fini");
+					proc = (typeof(proc))dlsym(h, "algo_proc");
+					GST_INFO("%s: init, %p", lib, h);
+					init();
+				}
 			}
 		}
 

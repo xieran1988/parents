@@ -55,12 +55,20 @@ else
 	fi
 fi
 
-mkdir -p /tmp/boot && \
-mount ${DRIVE}1 /tmp/boot && \
-cp -v $imgdir/u-boot.bin /tmp/boot && \
-cp -v $imgdir/MLO /tmp/boot && \
-cp -v $imgdir/uImage /tmp/boot && \
-sync && \
-umount /tmp/boot && \
-rmdir /tmp/boot
+cat > /tmp/boot.cmd <<E
+setenv bootdelay 0
+E
+mkimage -A arm -O linux -T script -C none -a 0 -e 0 -n "myscript" -d /tmp/boot.cmd /tmp/boot.scr
 
+mount ${DRIVE}1 sd && \
+cp $imgdir/u-boot.bin sd && \
+cp $imgdir/MLO sd && \
+cp $imgdir/uImage sd && \
+sync && \
+umount sd && \
+sleep 10 && \
+partprobe && \
+mount ${DRIVE}1 sd && \
+cp /tmp/boot.scr sd && \
+sync && \
+umount sd

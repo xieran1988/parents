@@ -1,62 +1,17 @@
 #!/usr/bin/env perl
 
 use Expect;
-use warnings;
-use strict;
+#use warnings;
+#use strict;
 
-my %A;
-my $board;
-my $nfs;
-my $kern;
-my $burnmlo;
-my $burnuboot;
-my $burnkern;
-my $burnubi;
-my $loaduboot;
-my $cmd;
 my %sertbl = qw/8168 2 3730 1/;
 my %pwrtbl = qw/8168 2 3730 0/;
-my $e;
 
-for my $a (@ARGV) {
-	print "arg: $a\n";
-	$board = $1 if $a =~ /-(3530|3730|8168)/;
-	$nfs = $1 if $a =~ /-nfs=(.*)/;
-	$kern = $1 if $a =~ /-kern=(.*)/;
-	$burnmlo = $1 if $a =~ /-burnmlo=(.*)/;
-	$burnuboot = $1 if $a =~ /-burnuboot=(.*)/;
-	$burnkern = $1 if $a =~ /-burnkern=(.*)/;
-	$burnubi = $1 if $a =~ /-burnubi=(.*)/;
-	$loaduboot = $1 if $a =~ /-loaduboot=(.*)/;
-	$cmd = $1 if $a =~ /-cmd=(.*)/;
-	$A{$a}++;
-}
-
-my $myip = $ENV{'myip'};
+my $board = $ENV{board};
+my $myip = $ENV{myip};
 my $gateip = "192.168.0.1";
 my $net = "192.168.0.0";
 my $armip = $ENV{"ip$board"};
-
-sub end { 
-	$e->interact(); exit;
-}
-
-retry_telnet:
-
-if (exists $A{'-telnet'}) {
-	$e = new Expect;
-	$e->spawn("telnet $armip");
-	if ($e->expect(2, '-re', "^Escape")) {
-		$e->expect(2, '-re', "# ") or exit 123;
-		$e->send("cd /root\n");
-		$e->expect(2, '-re', "# ") or exit 123;
-		if ($cmd) {
-			$e->send("$cmd\n");
-		}
-		end;
-	}
-}
-
 
 my @arr = (
 	"\x55\x01\x01\x02\x00\x00\x00\x59", # 1
@@ -73,23 +28,17 @@ my $pwr = int($pwrtbl{$board});
 `stty -F /dev/ttyUSB0 9600 -brkint -imaxbel line 0 echo`;
 open T, ">/dev/ttyUSB0";
 print T $arr[$pwr+1];
-exit if exists $A{"-pwroff"};
+exit if exists $ENV{pwroff};
 print T $arr[$pwr];
 close T;
 
-`cat > /tmp/kermrc <<E
-set line /dev/ttyUSB$sertbl{$board}
-set speed 115200
-set carrier-watch off
-set handshake none
-set flow-control none
-robust
-connect
-E`;
-$e = new Expect;
-$e->spawn("kermit /tmp/kermrc");
+my $e = new Expect;
+$e->spawn("kermit kermrc$sertbl{$board}");
 $e->expect(10, '-re', "^--------") or die;
-end if exists $A{'-kermit'};
+sub end { 
+	$e->interact(); exit;
+}
+end if $ENV{mode} eq 'kermit';
 
 sub uboot_exp {
 	$e->expect(1000000, '-re', "^(OMAP3|TI8168)") or die;
@@ -112,47 +61,6 @@ sub tftp {
 }
 
 waituboot;
-
-if (exists $A{'-eraseall'}) {
-	uboot "nandecc sw";
-	uboot "nand erase";
-}
-
-if ($burnmlo) {
-	uboot "nandecc hw";
-	uboot "nand erase 0 80000";
-	tftp $burnmlo;
-	uboot "nand write.i \${loadaddr} 0 80000";
-}
-
-if ($burnuboot) {
-	uboot "nandecc sw";
-	uboot "nand erase 80000 160000";
-	tftp $burnuboot;
-	uboot "nand write.i \${loadaddr} 80000 160000"
-}
-
-if (exists $A{'-burnkernmmc'}) {
-	uboot "mmc init";
-	uboot "fatload mmc 0:1 80000000 uImage"; 
-	uboot "nandecc sw";
-	uboot "nand erase 280000 400000";
-	uboot "nand write.i 80000000 280000 400000";
-}
-
-if ($burnkern) {
-	uboot "nandecc sw";
-	uboot "nand erase 280000 400000";
-	tftp $burnkern;
-	uboot "nand write.i \${loadaddr} 280000 400000";
-}
-
-if ($burnubi) {
-	uboot "nandecc sw";
-	uboot "nand erase 680000 8000000";
-	tftp $burnubi;
-	uboot "nand write.i \${loadaddr} 680000 \${filesize}";
-}
 
 my $bootargs;
 
@@ -178,41 +86,78 @@ if ($board eq '8168') {
 		;
 }
 
-if ($nfs) {
-	$nfs = `realpath $nfs`;
+if ($ENV{mode} eq 'nfs') {
+	my $nfs = `realpath $ENV{nfs}`;
 	chomp $nfs;
 	`./add-exportfs.sh $nfs`;
 	$bootargs .= 
 		"root=/dev/nfs nfsroot=$myip:$nfs " .
 		"ip=$armip:$myip:$gateip:255.255.255.0:arm:eth0 ";
 }
-if (exists $A{'-nandboot'}) {
+if (exists $ENV{nandboot}) { 
 	$bootargs .= "root=ubi0:rootfs ubi.mtd=4 rootfstype=ubifs";
 }
 
-uboot "setenv nandargs setenv bootargs $bootargs";
-uboot "saveenv";
+if ($ENV{mode} eq 'burn') {
+	for my $i (split /,/, $ENV{burn}) {
+		if ($i eq 'erase') {
+			uboot "nandecc sw";
+			uboot "nand erase";
+		}
+		if ($i eq 'mlo') {
+			uboot "nandecc hw";
+			uboot "nand erase 0 80000";
+			tftp $ENV{mlo};
+			uboot "nand write.i \${loadaddr} 0 80000";
+		}
+		if ($i eq 'uboot') {
+			uboot "nandecc sw";
+			uboot "nand erase 80000 160000";
+			tftp $ENV{uboot};
+			uboot "nand write.i \${loadaddr} 80000 160000"
+		}
+		if ($i eq 'kernmmc') {
+			uboot "mmc init";
+			uboot "fatload mmc 0:1 80000000 uImage"; 
+			uboot "nandecc sw";
+			uboot "nand erase 280000 400000";
+			uboot "nand write.i 80000000 280000 400000";
+		}
+		if ($i eq 'kern') {
+			uboot "nandecc sw";
+			uboot "nand erase 280000 400000";
+			tftp $ENV{kern};
+			uboot "nand write.i \${loadaddr} 280000 400000";
+		}
+		if ($i eq 'ubi') {
+			uboot "nandecc sw";
+			uboot "nand erase 680000 8000000";
+			tftp $ENV{ubi};
+			uboot "nand write.i \${loadaddr} 680000 \${filesize}";
+		}
+	}
+}
 
-exit if exists $A{'-exituboot'};
-end if exists $A{'-uboot'};
+if (!exists $ENV{defenv}) {
+	uboot "setenv nandargs setenv bootargs $bootargs $ENV{bootparm}";
+}
+uboot "saveenv" if exists $ENV{'saveenv'};
 
-if ($loaduboot) {
-	tftp $loaduboot;
+exit if $ENV{mode} eq 'burn';
+end if $ENV{mode} eq 'uboot';
+
+if ($ENV{loaduboot}) {
+	tftp $ENV{loaduboot};
 	$e->send("go \${loadaddr}\n");
 	waituboot;
 }
 
-if ($kern) {
-	tftp $kern;
+if ($ENV{kern}) {
+	tftp $ENV{kern};
 } else {
 	uboot "nand read \${loadaddr} 280000 400000";
 }
 $e->send("run nandargs; bootm \${loadaddr}\n");
-
-if (exists $A{'-telnet'}) {
-	$e->expect(1000000, "-re", "^Welcome");
-	goto retry_telnet;
-}
 
 end;
 
