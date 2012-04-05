@@ -40,20 +40,20 @@ dvsdk-3730: dvsdk_dm3730-evm_04_03_00_06_setuplinux dvsdk-3530 linux-ema-3730
 	./dvsdk_dm3730-evm_04_03_00_06_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
 	./build-dvsdk-3730.sh
 
-dvsdk-8168: arm-2009q1 ezsdk_dm816x-evm_5_03_00_09_setuplinux
+dvsdk-8168: arm-2009q1 ezsdk_dm816x-evm_5_03_01_15_setuplinux
 	@echo " -------------------------------------------"
 	@echo " ---- toolchain path ${PWD}/$</bin ---- "
 	@echo " -------------------------------------------"
-	./ezsdk_dm816x-evm_5_03_00_09_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
+	./ezsdk_dm816x-evm_5_03_01_15_setuplinux --forcehost --mode console --prefix ${parentsdir}/$@
 
 linux: 
 	git clone git@github.com:xieran1988/linux.git
 
-tifs-8168: dvsdk-8168
+tifs-8168: dvsdk-8168/filesystem/ezsdk-dm816x-evm-rootfs.tar.gz 
 	mkdir $@
-	sudo tar -xf dvsdk-8168/filesystem/ezsdk-dm816x-evm-rootfs.tar.gz -C $@
+	sudo tar -xf $< -C $@
 	sudo sed -i "/start-stop-daemon --start/s,$$, -- -l /bin/sh," $@/etc/init.d/telnetd
-	sudo echo "Welcome to tifs-8168" > $@/etc/issue
+	sudo "echo 'Welcome to tifs-8168' > $@/etc/issue"
 
 tifs-3730: dvsdk-3730
 	mkdir $@
